@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  type-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Privacy sanity check
+        shell: bash
+        run: |
+          set -euo pipefail
+          patterns='aff_mcp_v[0-9]|tunnel_[0-9a-fA-F]{32}|api/workspaces/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/mcp|Ov23[0-9A-Za-z]{16,}|/Users/[A-Za-z0-9._-]+/|sk-[0-9A-Za-z_-]{20,}'
+          matches="$(git grep -nE "$patterns" -- . ':(exclude)package-lock.json' || true)"
+          if [ -n "$matches" ]; then
+            echo "Potential deployment-specific identifier or secret found:"
+            echo "$matches"
+            exit 1
+          fi
+          echo "No blocked deployment-specific patterns found."
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies from lockfile
+        run: npm ci
+
+      - name: Type-check
+        run: npm run type-check
+
+      - name: Bundle Worker (Wrangler dry run)
+        run: npx wrangler deploy --dry-run --outdir dist

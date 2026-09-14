@@ -1,0 +1,8 @@
+# Copy to .dev.vars for local development only.
+# Never commit real secrets.
+
+AFFINE_MCP_URL=https://app.affine.pro/api/workspaces/YOUR_WORKSPACE_ID/mcp
+AFFINE_AUTH_HEADER=Bearer YOUR_AFFINE_MCP_CREDENTIAL
+GITHUB_CLIENT_ID=YOUR_GITHUB_OAUTH_CLIENT_ID
+GITHUB_CLIENT_SECRET=YOUR_GITHUB_OAUTH_CLIENT_SECRET
+ALLOWED_GITHUB_USERS=your-github-login
