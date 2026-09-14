@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Privacy sanity check
         shell: bash
@@ -25,8 +25,25 @@ jobs:
           fi
           echo "No blocked deployment-specific patterns found."
 
+      - name: Commit email privacy check
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          for email in "$(git log -1 --format='%ae')" "$(git log -1 --format='%ce')"; do
+            case "$email" in
+              *@users.noreply.github.com|noreply@github.com)
+                ;;
+              *)
+                echo "Public commit metadata exposes a non-noreply email."
+                exit 1
+                ;;
+            esac
+          done
+          echo "Commit author and committer emails use GitHub noreply."
+
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm

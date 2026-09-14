@@ -58,14 +58,14 @@ The first public version is pinned to the versions used while building the worki
 - Cloudflare account with Workers available
 - GitHub account
 - ChatGPT account/workspace that supports custom remote MCP apps/plugins
-- Node.js 20+ and npm for deployment
+- Node.js 24.11+ and npm for deployment
 
 ## 1. Clone and install
 
 ```bash
 git clone https://github.com/excitingadventures8/affine-chatgpt-mcp-bridge.git
 cd affine-chatgpt-mcp-bridge
-npm install
+npm ci
 npx wrangler login
 ```
 
@@ -308,3 +308,5 @@ The OAuth/MCP architecture is based on Cloudflare's public remote MCP examples a
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+Third-party notices: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

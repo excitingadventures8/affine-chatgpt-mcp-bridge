@@ -2,7 +2,7 @@
 
 This project is validated in two ways before release:
 
-1. **Clean-install CI** — GitHub Actions checks out the repository into a fresh runner, installs dependencies from `package.json`, and runs the TypeScript type-check.
+1. **Clean-install CI** — GitHub Actions checks out the repository into a fresh runner, installs dependencies reproducibly from `package-lock.json`, and runs the TypeScript type-check.
 2. **Privacy audit** — the repository and its public commit history are checked for deployment-specific identifiers and credentials before publishing.
 
 ## Privacy checklist
@@ -24,7 +24,7 @@ Only placeholders and generic examples should be committed. Runtime credentials 
 
 A deployment is considered ready when:
 
-- `npm install` succeeds from a fresh checkout;
+- `npm ci` succeeds from a fresh checkout;
 - `npm run type-check` succeeds;
 - the Worker deploys with a user-provided `OAUTH_KV` namespace ID;
 - unauthenticated `/mcp` returns HTTP 401;

@@ -21,14 +21,14 @@ Mac или другой постоянно включённый компьюте
 - аккаунт Cloudflare с Workers
 - GitHub аккаунт
 - ChatGPT с поддержкой пользовательских MCP-приложений
-- Node.js 20+ и npm
+- Node.js 24.11+ и npm
 
 ## 1. Установка
 
 ```bash
 git clone https://github.com/excitingadventures8/affine-chatgpt-mcp-bridge.git
 cd affine-chatgpt-mcp-bridge
-npm install
+npm ci
 npx wrangler login
 ```
 
