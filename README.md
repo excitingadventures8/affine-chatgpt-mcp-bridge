@@ -12,31 +12,47 @@
 
 A read-only cloud bridge that lets ChatGPT search and read an **AFFiNE Cloud** workspace over MCP without keeping a Mac, local proxy, or tunnel client running.
 
-The bridge runs on **Cloudflare Workers**, authenticates the human user with **GitHub OAuth**, applies an explicit GitHub username allowlist, and exposes only the two AFFiNE tools verified for read-only access:
+**[Руководство: организация пространства, распознавание контекста и работа с ИИ](docs/WORKSPACE_AND_AI_GUIDE_RU.md)**
 
-- `doc_search`
-- `read_document`
+The bridge runs on **Cloudflare Workers**, authenticates the human user with **GitHub OAuth**, and applies an explicit GitHub username allowlist. Version **1.3.5** includes eight read-only tools:
+
+| Tool | Purpose |
+| --- | --- |
+| `doc_search` | Search persisted documents through native AFFiNE MCP. |
+| `read_document` | Read document text through native AFFiNE MCP. |
+| `affine_list_sections` | Read headings, frames, groups and section context. |
+| `affine_list_images` | List image blocks with document and section context. |
+| `affine_read_image` | Return actual image bytes for visual inspection. |
+| `affine_read_structure` | Read tables, rows, fields, tags and references. |
+| `affine_write_diagnostics` | Check capabilities and permissions without writing. |
+| `affine_sync_diagnostics` | Check WebSocket sync stages without sending changes. |
+
+The last six tools are restricted to the configured owner and require an existing
+AFFiNE web-session cookie as well as a successful native-MCP document read.
+Additional allowlisted accounts receive only the two text tools.
 
 ## Architecture
 
-```text
-ChatGPT
-   │ OAuth 2.1
-   ▼
-Cloudflare Worker
-   │ GitHub OAuth + allowlist
-   │ hidden AFFiNE bearer credential
-   ▼
-AFFiNE Cloud MCP
-   ├─ doc_search
-   └─ read_document
-```
+ChatGPT authenticates with the Worker through GitHub OAuth. The Worker uses
+native AFFiNE MCP for text and document authorization. Owner-only tools then use
+the fixed AFFiNE Cloud REST, asset and WebSocket endpoints with the stored web
+session. Credentials are never accepted as tool arguments or returned to ChatGPT.
 
 No always-on Mac, VPS, Cloudflare Zero Trust subscription, or OpenAI API key is required for this cloud path.
 
 ## Status
 
 This project is deliberately **read-only**. It does not create, edit, move, or delete AFFiNE content.
+
+In the September 16, 2026 live check, both selected documents reached WebSocket,
+Engine.IO and Socket.IO connection, then timed out at `document_join`. No snapshot
+was received. `sync_read_verified`, `ready_for_write` and `persistence_verified`
+were all `false`. Reading and `Doc.Update` permission do not prove write delivery
+or persistence. See [validation](docs/VALIDATION.md).
+
+This public edition replaces private workspace and document identifiers with
+examples. Configure your own owner and workspace before enabling the extra tools.
+Publishing this repository does not deploy or change an existing Worker.
 
 It was extracted from a working AFFiNE Cloud ↔ ChatGPT setup and uses Cloudflare's OAuth provider / MCP agent stack. AFFiNE and ChatGPT are evolving products, so UI labels and upstream MCP behavior can change.
 
@@ -167,7 +183,28 @@ alice,bob
 
 The server **fails closed** if `ALLOWED_GITHUB_USERS` is empty.
 
-## 7. Deploy the configured bridge
+## 7. Configure optional owner-only tools and deploy
+
+For media, table structure and diagnostics, configure the two public placeholders:
+
+- `OWNER_LOGIN` in `src/affine-media/bridge.mjs`: exact GitHub login returned by OAuth;
+- `WORKSPACE_ID` in `src/affine-media/media.mjs`: the same workspace used by `AFFINE_MCP_URL`.
+
+Keep the owner in `ALLOWED_GITHUB_USERS`. Store an existing authorized web session
+in the Worker secret `AFFINE_SESSION_COOKIE`; never put cookie contents in source:
+
+```bash
+npx wrangler secret put AFFINE_SESSION_COOKIE
+npm test
+npm run type-check
+```
+
+The source placeholders are intentional. Keep deployment-specific edits local;
+do not push private workspace identifiers to a public fork. The pilot document
+constant is a synthetic test fixture, not a required live document.
+
+For an existing Worker, preserve its current name, KV binding, migrations and
+secrets. Do not replace a working `wrangler.jsonc` with this new-install template.
 
 ```bash
 npm run deploy
@@ -217,12 +254,15 @@ During connection:
 5. ChatGPT receives an OAuth token for the Worker.
 6. The AFFiNE credential remains hidden inside Cloudflare.
 
-The tool scan should expose only:
+For an ordinary allowlisted account the tool scan exposes:
 
 ```text
 doc_search
 read_document
 ```
+
+For the configured owner it exposes all eight tools listed above. Refresh the
+connector's tool catalog after upgrading if the client caches the previous list.
 
 ## Example prompts
 
@@ -257,7 +297,8 @@ npm run dev
 - OAuth state is random, short-lived, stored in Cloudflare KV, and bound to the browser with an HttpOnly/Secure cookie.
 - The AFFiNE bearer credential is stored only as a Cloudflare Worker secret.
 - The AFFiNE credential should be **read-only**.
-- The Worker defines only `doc_search` and `read_document` as MCP tools.
+- All eight tools are read-only; the six owner-only tools recheck native document access.
+- The optional AFFiNE web session is separate from the read-only MCP credential.
 - The AFFiNE bearer credential is never returned to ChatGPT or GitHub.
 
 If a credential appears in a public issue, commit, screenshot, chat, or CI log, revoke it immediately and create a new one.
@@ -303,7 +344,9 @@ The OAuth/MCP architecture is based on Cloudflare's public remote MCP examples a
 ## Documentation
 
 - [Русская инструкция по установке](docs/SETUP_RU.md)
+- [Пространство, контекст и совместная работа с ИИ](docs/WORKSPACE_AND_AI_GUIDE_RU.md)
 - [Validation & privacy checklist](docs/VALIDATION.md)
+- [Local folders, backups and upgrades](docs/LOCAL_WORKSPACE_RU.md)
 
 ## License
 

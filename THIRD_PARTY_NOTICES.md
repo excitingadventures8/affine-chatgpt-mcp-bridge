@@ -31,3 +31,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## Bundled Yjs dependencies
+
+The read-only media adapter bundles Yjs 13.6.27, lib0 0.2.117 and
+isomorphic.js 0.2.5. Their full MIT license notices are preserved in
+[src/affine-media/THIRD_PARTY_NOTICES.txt](src/affine-media/THIRD_PARTY_NOTICES.txt).

@@ -9,3 +9,11 @@ npm-debug.log*
 *.log
 
 dist/
+
+# Local deployment settings and installer backups
+.dev.vars.*
+!.dev.vars.example
+/wrangler.local.jsonc
+/affine-*-backup-*/
+/AFFiNE-Archive/
+__pycache__/
